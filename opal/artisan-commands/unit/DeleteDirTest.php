@@ -16,9 +16,44 @@ class DeleteDirTest extends TestCase
         $Filesystem->makeDirectory($path, 0755, true);
 
         $this->artisan("delete:dir $path")
-            ->expectsQuestion("Delete Directory: $path", 'true')
             ->expectsOutput("Directory Deleted: $path")
             ->assertExitCode(0);
+
+        $this->assertFalse($Filesystem->exists($this->temp_dir));
+
+        $Filesystem->deleteDirectory($path);
+    }
+
+    /** @test */
+    public function deletes_a_directory_interactive_yes(): void
+    {
+        $path       = $this->temp_dir;
+        $Filesystem = new Filesystem;
+        $Filesystem->makeDirectory($path, 0755, true);
+
+        $this->artisan("delete:dir $path --i")
+            ->expectsQuestion("Delete Directory: $path", 'y')
+            ->expectsOutput("Directory Deleted: $path")
+            ->assertExitCode(0);
+
+        $this->assertFalse($Filesystem->exists($this->temp_dir));
+
+        $Filesystem->deleteDirectory($path);
+    }
+
+    /** @test */
+    public function deletes_a_directory_interactive_no(): void
+    {
+        $path       = $this->temp_dir;
+        $Filesystem = new Filesystem;
+        $Filesystem->makeDirectory($path, 0755, true);
+
+        $this->artisan("delete:dir $path --i")
+            ->expectsQuestion("Delete Directory: $path", null)
+            ->expectsOutput('No action taken')
+            ->assertExitCode(0);
+
+        $this->assertTrue($Filesystem->exists($this->temp_dir));
 
         $Filesystem->deleteDirectory($path);
     }
